@@ -1,4 +1,5 @@
 
+options(warn=-1)
 require(binhf)
 
 file_name = paste(getwd(),'data', 'ts_sp_mib.csv', sep="/")
