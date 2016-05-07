@@ -202,7 +202,7 @@ for nT in xrange(1,len(check_times)):
 
 # Finally we plot the profile
 
-# In[5]:
+# In[4]:
 
 get_ipython().magic(u'matplotlib inline')
 
@@ -213,7 +213,7 @@ plt.title("cva profile of plain vanilla swap by swaption replica")
 plt.plot(check_times,EPE)
 
 
-# In[6]:
+# In[5]:
 
 # for references in the mcs notebook
 EPE_Swaption = EPE

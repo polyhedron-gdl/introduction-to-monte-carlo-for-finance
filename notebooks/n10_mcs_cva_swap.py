@@ -76,7 +76,7 @@
 # 
 # The calculation of the model discount factor is incapsulated into the class *GPPDiscountCurve* which is a specialization of the *DiscountCurve* class.
 
-# In[1]:
+# In[8]:
 
 import datetime
 from math             import exp, sqrt
@@ -85,7 +85,7 @@ from qfin_ir_classes  import *
 from qfin_pocket      import *
 
 
-# In[2]:
+# In[9]:
 
 class GPPDiscountCurve():
     def __init__(self,  dc, a, sigma, x_t, simulDate):
@@ -156,7 +156,7 @@ class GPPDiscountCurve():
 # For our example portfolio we'll take one interest rate swap EUR 1MM notional receiving 2% every 6m, TARGET calendar, with 5 years maturity. Actual/360 daycounter for both legs.
 # 
 
-# In[3]:
+# In[10]:
 
 today           = datetime.date(2014,10,24)
 #        
@@ -220,7 +220,7 @@ sim_times       = np.array(sim_times)
 
 # To generate future values of $r_t$ first we will generate matrix of standard normal variables using numpy library function *numpy.random.standard_normal()*. After that we will apply transform $mean + variance \cdot Normal(0,1)$ to get $r_t$ after getting the value of  $r_t$, we will construct yield curve  using model discount factors and store each yield curve in matrix *fwdMat*. 
 
-# In[4]:
+# In[11]:
 
 #
 #-------------------------------------------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ for nSim in xrange(mc_runs):
 # and finally calculate CVA as sum as in BASEL 3 formula. Here we'll take 500bps flat CDS spread.
 # 
 
-# In[5]:
+# In[12]:
 
 npvMat=np.array(npvMat)
 npvMat[npvMat<0]=0
@@ -290,7 +290,7 @@ CVA = (1.0-recovery_rate)*sum_cva
 
 # Finally we plot the profile
 
-# In[7]:
+# In[13]:
 
 get_ipython().magic(u'matplotlib inline')
 
