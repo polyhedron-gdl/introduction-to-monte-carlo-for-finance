@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[58]:
+# In[15]:
 
 get_ipython().magic(u'matplotlib inline')
 
@@ -15,7 +15,7 @@ import numpy as np
 # ## The Heston Model and Its Simulation
 # 
 # ##### from Yves Hilpisch "Derivatives Analytics with Python" Wiley Finance (2015) 
-# (in my personal opinion, one of the most useful books in quantitative finance of recent years)
+# (in my humble personal opinion, one of the most useful books in quantitative finance of recent years)
 # You cannot miss to visit his [web site](http://pythonquants.com/)!!! 
 # 
 # <img src="http://hilpisch.com/images/derivatives_analytics_front.jpg" alt="Derivatives Analytics with Python" width="10%" align="left" border="0">
@@ -40,71 +40,72 @@ import numpy as np
 # 
 # The two Brownian motions are instantaneously correlated with $dZ_t^1 dZ_t^2 = \rho$ This correlation introduces a new problem dimension into the discretization for simulation purposes. To avoid problems arising from correlating normally distributed increments (of $S$) with chi-squared distributed increments (of $v$), we will in the following only consider Euler schemes for both the $S$ and $v$ process. This has the advantage that the increments of $v$ become normally distributed as well and can therefore be easily correlated with the increments of $S$.
 # 
-# ...
+# Following the presenation of Hilpisch we consider two discretization schemes for $S$ and seven discretization schemes for $v$. For $S$ we have the **simple** Euler discretization scheme (with $s=t-\Delta t$)
 # 
-
-# In[59]:
-
-def random_number_generator(M, I):
-    ''' Function to generate pseudo-random numbers.
-
-    Parameters
-    ==========
-    M: int
-        time steps
-    I: int
-        number of simulation paths
-
-    Returns
-    =======
-    rand: NumPy array
-        random number array
-    '''
-    if antipath:
-        rand = np.random.standard_normal((2, M + 1, I / 2))
-        rand = np.concatenate((rand, -rand), 2)
-    else:
-        rand = np.random.standard_normal((2, M + 1, I))
-    if momatch:
-        rand = rand / np.std(rand)
-        rand = rand - np.mean(rand)
-    return rand
-
+# $$ S_t = S_s \left( e^{r\Delta t} + \sqrt{v_t} \sqrt{\Delta t} z_t^1 \right)$$
+# 
+# As an alternative we consider the **exact** **log** Euler scheme
+# 
+# $$S_t = S_s e^{(r-v_t/2)\Delta t + \sqrt{v_t} \sqrt{\Delta t} z_t^1} $$
+# 
+# This one is obtained by considering the dynamics of $\log S_t$ and applying  Ito's lemma to it. These schemes can be combined with any of the following Euler schemes for the square-root diffusion ($x^+ = \max[0,x]$):
+# 1. **Full Truncation**
+# $$\tilde x_t=\tilde x_s + \kappa(\theta - \tilde x_s^+)\Delta t + \sigma  \sqrt{\tilde x_s^+} \sqrt{\Delta t} z_t$$
+# $$x_t = \tilde x_t^+$$
+# 2. **Partial Truncation**
+# $$\tilde x_t=\tilde x_s + \kappa(\theta - \tilde x_s)\Delta t + \sigma  \sqrt{\tilde x_s^+} \sqrt{\Delta t} z_t$$
+# $$x_t = \tilde x_t^+$$
+# 3. **Truncation**
+# $$x_t = \max \left[0,\tilde x_s + \kappa(\theta - \tilde x_s)\Delta t + \sigma  \sqrt{\tilde x_s} \sqrt{\Delta t} z_t \right] $$
+# 4. **Reflection**
+# $$\tilde x_t=\vert \tilde x_s \vert + \kappa(\theta - \vert \tilde x_s \vert )\Delta t + \sigma  \sqrt{\vert \tilde x_s \vert} \sqrt{\Delta t} z_t$$
+# $$x_t = \vert \tilde x_t \vert $$
+# 5. **Hingham-Mao**
+# $$\tilde x_t= \tilde x_s   + \kappa(\theta -   \tilde x_s  )\Delta t + \sigma  \sqrt{\vert \tilde x_s \vert} \sqrt{\Delta t} z_t$$
+# $$x_t = \vert \tilde x_t \vert $$
+# 6. **Simple Reflection**
+# $$\tilde x_t= \left\vert \, \tilde x_s   + \kappa(\theta -   \tilde x_s  )\Delta t + \sigma  \sqrt{\tilde x_s} 
+# \sqrt{\Delta t}  z_t \, \right\vert$$
+# 7. **Absorption**
+# $$\tilde x_t=\tilde x_s^+ + \kappa(\theta - \tilde x_s^+)\Delta t + \sigma  \sqrt{\tilde x_s^+} \sqrt{\Delta t} z_t$$
+# $$x_t = \tilde x_t^+$$
+# 
+# In the literature there are a lot of tests and numerical studies available that compare efficiency and precision of different discretization schemes.
 
 # ### Square-Root Diffusion Simulation Function
+# 
+# In the following cell the Python code which implement the previous schema for the variance evolution equation. This is the list of **input parameters**:
+# 
+#     x0: float
+#         initial value
+#     kappa: float
+#         mean-reversion factor
+#     theta: float
+#         long-run mean
+#     sigma: float
+#         volatility factor
+#     T: float
+#         final date/time horizon
+#     M: int
+#         number of time steps
+#     I: int
+#         number of paths
+#     row: int
+#         row number for random numbers
+#     cho_matrix: NumPy array
+#         cholesky matrix
+# 
+# In **return** we get a NumPy array containing the simulated variance paths
+# 
+#     x: NumPy array
+#         simulated variance paths
+# 
 
-# In[60]:
+# In[16]:
 
 def SRD_generate_paths(x_disc, x0, kappa, theta, sigma,
                        T, M, I, rand, row, cho_matrix):
-    ''' Function to simulate Square-Root Diffussion (SRD/CIR) process.
 
-    Parameters
-    ==========
-    x0: float
-        initial value
-    kappa: float
-        mean-reversion factor
-    theta: float
-        long-run mean
-    sigma: float
-        volatility factor
-    T: float
-        final date/time horizon
-    M: int
-        number of time steps
-    I: int
-        number of paths
-    row: int
-        row number for random numbers
-    cho_matrix: NumPy array
-        cholesky matrix
-
-    Returns
-    =======
-    x: NumPy array
-        simulated variance paths
-    '''
     dt = T / M
     x = np.zeros((M + 1, I), dtype=np.float)
     x[0] = x0
@@ -150,31 +151,63 @@ def SRD_generate_paths(x_disc, x0, kappa, theta, sigma,
     return x
 
 
-# ### Function for Heston Asset Process
+# ### Variance Reduction Generator
+# 
+# To improve upon valuation accuracy we use both moment matching and antithetic paths for our Python implementation. To generate antithetic paths we use both the pseudo-random number $z_{t,i}$ and its negative value $-z_{t,i}$ where we generate only $I/2$ random numbers. With regard to moment matching, we correct the first two moments of the pseudo-random numbers delivered by Python. The respective code for both antithetic paths and moment matching looks like:
 
-# In[61]:
+# In[17]:
 
-def H93_generate_paths(S0, r, v, row, cho_matrix):
-    ''' Simulation of Heston (1993) index process.
-    
+def random_number_generator(M, I):
+    ''' Function to generate pseudo-random numbers.
+
     Parameters
     ==========
-    S0: float
-        initial value
-    r: float
-        constant short rate
-    v: NumPy array
-        simulated variance paths
-    row: int
-        row/matrix of random number array to use
-    cho_matrix: NumPy array
-        Cholesky matrix
+    M: int
+        time steps
+    I: int
+        number of simulation paths
 
     Returns
     =======
-    S: NumPy array
-        simulated index level paths
+    rand: NumPy array
+        random number array
     '''
+    if antipath:
+        rand = np.random.standard_normal((2, M + 1, I / 2))
+        rand = np.concatenate((rand, -rand), 2)
+    else:
+        rand = np.random.standard_normal((2, M + 1, I))
+    if momatch:
+        rand = rand / np.std(rand)
+        rand = rand - np.mean(rand)
+    return rand
+
+
+# ### Function for Heston Asset Process
+# 
+# **Input Parameters**
+# 
+#     S0: float
+#         initial value
+#     r: float
+#         constant short rate
+#     v: NumPy array
+#         simulated variance paths
+#     row: int
+#         row/matrix of random number array to use
+#     cho_matrix: NumPy array
+#         Cholesky matrix
+# 
+# **Returns**
+# 
+#     S: NumPy array
+#         simulated index level paths
+#         
+# Note that depending on the time interval $\Delta t$ used, the drift of the index level process may also show a non-negligible bias (even after correction of the random numbers). We can correct the first moment of the index level process in a fashion similar to the pseudo-random numbers (the correction is activated by the boolean variable *momatch*).      
+
+# In[18]:
+
+def H93_generate_paths(S0, r, v, row, cho_matrix):
     S = np.zeros((M + 1, I), dtype=np.float)
     S[0] = S0
     bias = 0.0
@@ -195,7 +228,7 @@ def H93_generate_paths(S0, r, v, row, cho_matrix):
     return S
 
 
-# In[76]:
+# In[19]:
 
 r       = 0.05   # Fixed Short Rate
 theta_v = 0.02   # long-term variance level
@@ -215,7 +248,7 @@ cho_matrix           = np.linalg.cholesky(covariance_matrix)
 # time step (per year)
 M0      = 50       
 # expiry (y)
-T       = 1.0/12.0     
+T       = 1.0 
 # number of paths per valuation
 I       = 100000     
 
@@ -251,7 +284,9 @@ rel_error = (V0_MCS - C0) / C0
                         
 
 
-# In[77]:
+# In[20]:
 
-print V0_MCS, C0, SE, 100*rel_error
+print "Call Price with Monte Carlo Simulation = ", V0_MCS, "+/-", SE 
+print "Call Price with Semi-Analytical Model  = ", C0
+print "Relative Error (%)                     = ", 100*rel_error
 
