@@ -62,7 +62,7 @@ for k in range(1, M + 1):
     plt.ylim((np.min(wt)-.1*d, np.max(wt)+.1*d))
     plt.title('step = %s'%str(k))
     fig.canvas.draw()
-    plt.pause(1)
+    plt.pause(.25)
 
 while True:
-    plt.pause(0.05)
+    plt.pause(0.01)
