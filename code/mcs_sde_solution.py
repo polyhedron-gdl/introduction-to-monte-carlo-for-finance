@@ -74,7 +74,7 @@ M  = 1024         # time steps
 I  = 1            # index level paths
 dt = T / M        # time interval
 df = exp(-r * dt) # discount factor
-nsample = 20
+nsample = 5
 
 for n in range(1,nsample+1):
     # Stock Price Paths

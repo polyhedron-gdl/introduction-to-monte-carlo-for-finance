@@ -32,6 +32,20 @@ ax = fig.add_subplot(111)
 line1, = ax.plot(t, wt, 'r-', color='black') # Returns a tuple of line objects, thus the comma
 plt.ylim((-3,3))
 
+# in this program the parametrization of time interval is the following (see slides for comparison)
+#
+# W(t)                 = wt[l]
+# W(t+deltat1)         = wt[i]
+# W(t+deltat1+deltat2) = wt[r]
+#
+# deltat1 = t[i]-t[l]
+# deltat2 = t[r]-t[i]
+# deltat1+deltat2 = t[r]-t[l]
+#
+# alpha = (t[r]-t[i])/(t[r]-t[l])
+# beta  = (t[i]-t[l])/(t[r]-t[l])
+# gamma = sqrt((t[r]-t[i])*(t[i]-t[l])/t[r]-t[l])
+#
 j_max = 1
 for k in range(1, M + 1):
     i_min = h / 2
