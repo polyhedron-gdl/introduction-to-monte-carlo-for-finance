@@ -53,7 +53,8 @@ def milshstein_approx(nstep, M, S0, vol, rand, dt):
         for t in times[(k-1)*jump+1: k*jump+1]:
             dwti = dwti + rand[t, :] * sqrt(dt)
         
-        S[k*jump,0] = S_prev * (1 +  r * delta_t +  vol * dwti)  + 0.5* S_prev * vol * vol * (dwti*dwti-delta_t)
+        S[k*jump,0] = S_prev * (1 +  r * delta_t +  vol * dwti)  
+        + 0.5* S_prev * vol * vol * (dwti*dwti-delta_t)
         
         for l in range(1, jump):
             S[(k-1)*jump + l] = S_prev + l * (S[k*jump,0] - S_prev) / jump

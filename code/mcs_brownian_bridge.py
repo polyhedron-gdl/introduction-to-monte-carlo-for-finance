@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 #seed(1000)
 
 # number of step of refinement
-M = 12
+M = 20
 # number of points
 h = 2**M
 
