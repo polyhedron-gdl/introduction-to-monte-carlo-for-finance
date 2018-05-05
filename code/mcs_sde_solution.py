@@ -83,8 +83,7 @@ for n in range(1,nsample+1):
     S[0, :] = S0                        # initial values
     times = range(1, M + 1, 1)
     for t in times:        # stock price paths
-        S[t, :] = S[t - 1, :] * exp((r - vol ** 2 / 2)
-            * dt + vol * rand[t, :] * sqrt(dt))
+        S[t, :] = S[t - 1, :] * exp((r - vol ** 2 / 2) * dt + vol * rand[t, :] * sqrt(dt))
     
     times = [0] + times
     time_labels = [float(t) * dt for t in times]
