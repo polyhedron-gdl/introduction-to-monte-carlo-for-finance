@@ -5,13 +5,13 @@ Created on 23 apr 2016
 @summary: Study of Eulero-Milshstein Approximation of a Geometric Brownian Motion, for educational purpose only
 '''
 
-import matplotlib
+#import matplotlib
 
 from pylab import *
 from math import exp, sqrt
 from matplotlib import pyplot as plt
 
-import numpy
+#import numpy
 
 def euler_approx(nstep, M, S0, vol, rand, dt):
     '''
