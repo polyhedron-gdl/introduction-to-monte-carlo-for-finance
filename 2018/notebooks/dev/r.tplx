@@ -1,0 +1,8 @@
+((*- extends 'article.tplx' -*))
+
+((* block packages *))    
+    ((( super() )))
+
+    \usepackage[inline]{enumitem}
+    \usepackage{minted}
+((* endblock packages *))
